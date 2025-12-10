@@ -6,7 +6,8 @@ initializeDatabase();
 const User = require("./models/User.model");
 const Task = require("./models/Task.model");
 const Team = require("./models/Team.model");
-const Project = require("./models/Project.model")
+const Project = require("./models/Project.model");
+const Tag = require("./models/Project.model")
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 
@@ -354,6 +355,198 @@ app.delete("/tasks/:id",async(req,res)=>{
         return res.status(500).json({message:"Internal Server error",error:error.message});
     }
 })
+
+// fetch all projects
+
+app.get("/projects",async(req,res)=>{
+    try{
+        const projectData = await Project.find();
+
+        if(projectData.length === 0){
+            return res.status(404).json({error:"Project data is not present"})
+        }
+
+        res.status(200).json({message:"Data fetched successfully!",projectData});
+
+    }catch(error){
+        res.status(500).json({message:"Internal Server Error",error:error.message});
+    }
+})
+
+// create new tags
+
+app.post("/tags",async(req,res)=>{
+    try{
+        const {name} = req.body;
+
+        if(!name){
+            return res.status(402).json({error:"Tags are not provided"})
+        };
+
+        const newTags = await Tag({
+            name
+        });
+
+        await newTags.save();
+
+        res.status(200).json({message:"Successfully created new tags!",newTags});
+
+
+    }catch(error){
+        res.status(500).json({message:"Internal Server Error",error:error.message});
+    }
+})
+
+
+app.get("/tags",async(req,res)=>{
+    try{
+        const tagsData = await Tag.find();
+        console.log(tagsData);
+
+        if(tagsData.length === 0){
+            return res.status(404).json({error:"Tags not found!"});
+        }
+
+        res.status(200).json({message:"Tags fetched successfully!",tagsData});
+
+    }catch(error){
+        res.status(500).json({message:"Internal Server Error",error:error.message});
+    }
+})
+
+
+// // create new tags for task
+// app.post("/tasks/tags/:taskId", async (req, res) => {
+//   try {
+//     const taskId = req.params.taskId;
+//     const { tags } = req.body;
+
+//     if (!tags || !Array.isArray(tags)) {
+//       return res.status(400).json({ error: "Tags must be an array" });
+//     }
+
+//     // Finding existing task
+//     const task = await Task.findById(taskId);
+//     if (!task) {
+//       return res.status(404).json({ error: "Task not found" });
+//     }
+
+//     // Add new tags to existing ones
+//     task.tags.push(...tags);
+
+//     // Save updated task
+//     await task.save();
+
+//     return res.status(200).json({
+//       message: "Tags added successfully",
+//       task
+//     });
+
+//   } catch (error) {
+//     return res.status(500).json({
+//       message: "Internal Server Error",
+//       error: error.message
+//     });
+//   }
+// });
+
+
+// fetching repport with last week
+
+app.get("/report/last-week",async(req,res)=>{
+    try{
+
+        const date = new Date();
+        date.setDate(date.getDate()-7);
+
+        const getData = await Task.find({
+            status:"Completed",
+            updatedAt: { $gte: date }
+        });
+        console.log(getData);
+
+        res.status(200).json({
+            message: "Tasks completed in the last week",
+            count: getData.length,
+            getData
+        })
+
+    }catch(error){
+        res.status(500).json({message:"Internal Server Error",error:error.message});
+    }
+});
+
+// pending report count
+app.get("/report/pending", async (req, res) => {
+  try {
+    const pendingTasks = await Task.find({
+      status: { $ne: "Completed" }
+    });
+
+    // Sum total days of work pending
+    const totalPendingDays = pendingTasks.reduce((sum, task) => {
+      return sum + (task.timeToComplete || 0);
+    }, 0);
+
+    res.status(200).json({
+      message: "Total pending work days fetched successfully",
+      totalPendingDays,
+      pendingTasks
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message
+    });
+  }
+});
+
+// closed tasks report
+
+app.get("/report/closed-tasks", async (req, res) => {
+  try {
+    const { groupBy } = req.query;
+
+    const validGroups = ["team", "owners", "project"];
+    if (!validGroups.includes(groupBy)) {
+      return res.status(400).json({
+        error: "Invalid groupBy. Use team, owners, or project."
+      });
+    }
+
+    const result = await Task.aggregate([
+      {
+        $match: { status: "Completed" }
+      },
+      {
+        $group: {
+          _id: `$${groupBy}`,
+          totalClosedTasks: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { totalClosedTasks: -1 }
+      }
+    ]);
+
+    res.status(200).json({
+      message: `Closed tasks grouped by ${groupBy}`,
+      result
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message
+    });
+  }
+});
+
+
+
+
+
 
 const PORT = 3000;
 app.listen(PORT,()=>{
