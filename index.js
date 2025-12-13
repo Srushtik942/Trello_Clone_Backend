@@ -7,7 +7,7 @@ const User = require("./models/User.model");
 const Task = require("./models/Task.model");
 const Team = require("./models/Team.model");
 const Project = require("./models/Project.model");
-const Tag = require("./models/Project.model")
+const Tag = require("./models/Project.model");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 
@@ -105,7 +105,7 @@ console.log("Server started. Loaded verifyJWT =", verifyJWT);
 
 
 // User login
-app.post("/auth/login",async(req,res)=>{
+app.post("",async(req,res)=>{
     try{
         const {email, password}= req.body;
         console.log(req.body);
@@ -412,6 +412,24 @@ app.get("/tags",async(req,res)=>{
     }catch(error){
         res.status(500).json({message:"Internal Server Error",error:error.message});
     }
+})
+
+// fetch all users
+
+app.get("/users",async(req,res)=>{
+  try{
+    const userData = await User.find();
+    console.log(userData);
+
+    if(userData.length === 0){
+      return res.status(404).json({error:"User not found"})
+    }
+
+    res.status(200).json({message:"User fetched successfully!",userData})
+
+  }catch(error){
+    res.status(500).json({message:"Internal Server Error",error:error.message});
+  }
 })
 
 
