@@ -580,9 +580,39 @@ app.get("/report/closed-tasks", async (req, res) => {
 });
 
 
+app.get("/teams/:teamId/owners", async (req, res) => {
+  try {
+    const { teamId } = req.params;
 
+    const tasks = await Task.find({ team: teamId })
+      .populate("owners", "name");
 
+    if (tasks.length === 0) {
+      return res.status(404).json({ message: "No tasks found for this team" });
+    }
 
+    const ownersMap = new Map();
+
+    tasks.forEach(task => {
+      task.owners.forEach(owner => {
+        ownersMap.set(owner._id.toString(), owner);
+      });
+    });
+
+    const uniqueOwners = Array.from(ownersMap.values());
+
+    res.status(200).json({
+      message: "Owners fetched successfully",
+      owners: uniqueOwners
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message
+    });
+  }
+});
 
 const PORT = 3000;
 app.listen(PORT,()=>{
