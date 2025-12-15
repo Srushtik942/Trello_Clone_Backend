@@ -614,6 +614,36 @@ app.get("/teams/:teamId/owners", async (req, res) => {
   }
 });
 
+
+app.get("/projects/search", async (req, res) => {
+  try {
+    const { name } = req.query;
+
+    if (!name) {
+      return res.status(400).json({ error: "Project name is required" });
+    }
+
+    const projects = await Project.find({
+      name: { $regex: new RegExp(name, "i") }
+    });
+
+    if (projects.length === 0) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    res.status(200).json({
+      message: "Projects fetched successfully",
+      projects
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
 const PORT = 3000;
 app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`);
