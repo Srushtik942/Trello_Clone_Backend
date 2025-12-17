@@ -614,32 +614,50 @@ app.get("/teams/:teamId/owners", async (req, res) => {
   }
 });
 
-
-app.get("/projects/search", async (req, res) => {
+// fetch task 
+app.get("/tasks/search", async (req, res) => {
   try {
     const { name } = req.query;
 
     if (!name) {
-      return res.status(400).json({ error: "Project name is required" });
+      return res.status(400).json({ error: "Task name is required" });
     }
 
-    const projects = await Project.find({
-      name: { $regex: new RegExp(name, "i") }
-    }).select("name description createdAt");
+    const tasks = await Task.find({
+      name: { $regex: name, $options: "i" }
+    })
+      .populate("project", "name")
+      .populate("team", "name")
+      .select("name project team status createdAt");
 
-    if (projects.length === 0) {
-      return res.status(404).json({ error: "Project not found" });
+    if (!tasks.length) {
+      return res.status(404).json({ error: "No tasks found" });
     }
 
     res.status(200).json({
-      message: "Projects fetched successfully",
-     projectData: projects
+      message: "Tasks fetched successfully",
+      taskData: tasks
     });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+// fetching project details
+
+
+// app.get("/projectDetails/:id",async(req,res)=>{
+//   try{
+//     const id = req.params.id;
+
+//     const findProjectData = await Project.findOne({id:id}).populate()
+
+//   }catch(error){
+//     res.status(500).json({message:"Internal Server Error",error: error.message});
+//   }
+// })
 
 
 
