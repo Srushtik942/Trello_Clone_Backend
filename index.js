@@ -625,7 +625,7 @@ app.get("/projects/search", async (req, res) => {
 
     const projects = await Project.find({
       name: { $regex: new RegExp(name, "i") }
-    });
+    }).select("name description createdAt");
 
     if (projects.length === 0) {
       return res.status(404).json({ error: "Project not found" });
@@ -633,7 +633,7 @@ app.get("/projects/search", async (req, res) => {
 
     res.status(200).json({
       message: "Projects fetched successfully",
-      projects
+     projectData: projects
     });
 
   } catch (error) {
