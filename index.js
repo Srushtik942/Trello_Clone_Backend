@@ -651,7 +651,11 @@ app.get("/tasks/search/:id",async(req,res)=>{
   try{
     const id = req.params.id;
 
-    const response = await Task.findOne({_id:id});
+    const response = await Task.findOne({_id:id})
+      .populate("project", "name")
+      .populate("team", "name")
+      .populate("owners", "name email");
+      
     console.log(response);
 
     if(!response){
