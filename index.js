@@ -105,7 +105,7 @@ console.log("Server started. Loaded verifyJWT =", verifyJWT);
 
 
 // User login
-app.post("",async(req,res)=>{
+app.post("/auth/login",async(req,res)=>{
     try{
         const {email, password}= req.body;
         console.log(req.body);
