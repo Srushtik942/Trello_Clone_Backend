@@ -7,7 +7,7 @@ const User = require("./models/User.model");
 const Task = require("./models/Task.model");
 const Team = require("./models/Team.model");
 const Project = require("./models/Project.model");
-const Tag = require("./models/Project.model");
+const Tag = require("./models/Tag.model");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 
@@ -655,7 +655,7 @@ app.get("/tasks/search/:id",async(req,res)=>{
       .populate("project", "name")
       .populate("team", "name")
       .populate("owners", "name email");
-      
+
     console.log(response);
 
     if(!response){
