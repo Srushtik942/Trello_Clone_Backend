@@ -628,7 +628,7 @@ app.get("/tasks/search", async (req, res) => {
     })
       .populate("project", "name")
       .populate("team", "name")
-      .ppulate("tags","name")
+      .populate("tags","name")
       .select("name project team status createdAt");
 
     if (!tasks.length) {
