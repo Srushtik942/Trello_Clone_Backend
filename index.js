@@ -134,6 +134,7 @@ app.post("/auth/login",async(req,res)=>{
 
         console.log(token)
 
+
        return res.status(200).json({message:"Login Successful",token});
 
     }catch(error){
@@ -670,9 +671,6 @@ app.get("/tasks/search/:id",async(req,res)=>{
     res.status(200).json({message:"Internal Server Error",error:error.message});
   }
 })
-
-
-
 
 
 const PORT = 3000;
